@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ScssLintProjectComponent">
-    <option name="scssLintConfigFile" value="$PROJECT_DIR$/../SHD-Composites-Core-Site/.sass-lint.yml" />
-    <option name="scssLintExecutable" value="/usr/local/bin/scss-lint" />
-    <option name="pluginEnabled" value="true" />
-  </component>
-</project>
