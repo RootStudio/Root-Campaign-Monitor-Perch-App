@@ -1,0 +1,6 @@
+{
+    "vendor-dir": "lib/vendor",
+    "require": {
+        "campaignmonitor/createsend-php": "^6.0"
+    }
+}
