@@ -76,17 +76,20 @@ class RootCampaign_Campaigns extends RootCampaign_Factory {
      *
      * @param int $value
      * @param string $column
+     * @param boolean $import
      *
      * @return RootBuilder_campaign|bool
      */
-    public function find($value, $column = null) {
+    public function find($value, $column = null, $import = false) {
         $column = ($column === null) ? $this->pk : $column ;
         $sql = 'SELECT * FROM ' . $this->table .
             ' WHERE ' . $column . '=' . $this->db->pdb($value) . ' AND ' . $this->standard_restrictions() . ' LIMIT 1';
         $result = $this->db->get_row($sql);
 
         if (is_array($result)) {
-            return $this->return_instance($result);
+            $campaign = $this->return_instance($result);
+            if($import && $this->importer->checkSync('listSingle', $value)) $campaign->update([], true);
+            return $campaign;
         }
 
         return false;
@@ -96,10 +99,13 @@ class RootCampaign_Campaigns extends RootCampaign_Factory {
      * Returns all records optionally paginated
      *
      * @param bool $Paging
+     * @param bool $importAll
      *
      * @return array|bool|SplFixedArray
      */
-    public function all($Paging = false) {
+    public function all($Paging = false, $importAll = false) {
+
+        if($this->importer->checkSync('campaigns')) $this->import($importAll);
 
         if ($Paging && $Paging->enabled()) {
             $sql = $Paging->select_sql();
@@ -133,7 +139,7 @@ class RootCampaign_Campaigns extends RootCampaign_Factory {
 
     }
 
-    public function import() {
+    public function import($importAll = false) {
         $sent_result = $this->rest_api->clients()->get_campaigns();
         $pending_result = $this->rest_api->clients()->get_scheduled();
         $draft_result = $this->rest_api->clients()->get_drafts();
@@ -147,27 +153,28 @@ class RootCampaign_Campaigns extends RootCampaign_Factory {
             $this->transform($pending, 'Scheduled'),
             $this->transform($draft, 'Draft')
         );
+        $this->importer->update('campaigns');
 
-        $this->createOrUpdateMultiple($campaigns);
+        $this->createOrUpdateMultiple($campaigns, $importAll);
 
     }
 
-    public function createOrUpdateMultiple($data) {
+    public function createOrUpdateMultiple($data, $import = false) {
         foreach ($data as $campaign) {
-            $current = $this->find($campaign['campaignMonitorID'], 'campaignMonitorID');
+            $current = $this->find($campaign['campaignMonitorID'], 'campaignMonitorID', $import);
             if($current) {
-                $current->updateAndImport($campaign);
+                $current->update($campaign, $import);
             } else {
-                $this->create($campaign);
+                $this->create($campaign, $import);
             }
         }
     }
 
-    public function create($data) {
+    public function create($data, $import = false) {
 
         $campaign = parent::create($data);
 
-        if($campaign) {
+        if($campaign && $import) {
             $campaign->import();
         }
 

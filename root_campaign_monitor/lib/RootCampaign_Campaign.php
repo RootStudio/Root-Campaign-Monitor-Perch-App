@@ -13,16 +13,11 @@ class RootCampaign_Campaign extends RootCampaign_Base {
 
     protected $modified_date_column = 'campaignUpdated';
 
-    public function update($data) {
+    public function update($data, $import = false) {
+
+        $data = array_merge($data, ($import) ? $this->import() : []);
+
         return parent::update($data);
-    }
-
-    public function updateAndImport($data) {
-        $result = $this->rest_api->campaigns($this->campaignMonitorID())->get_summary();
-
-        $campaign = ($result->was_successful()) ? $result->response : null;
-        $data = array_merge($data, $this->transform($campaign));
-        $this->update($data);
 
     }
 
@@ -31,7 +26,9 @@ class RootCampaign_Campaign extends RootCampaign_Base {
 
         $campaign = ($result->was_successful()) ? $result->response : null;
 
-        $this->update($this->transform($campaign));
+        $this->importer->update('campaignSingle', $this->id());
+
+        return $this->transform($campaign);
 
     }
 
