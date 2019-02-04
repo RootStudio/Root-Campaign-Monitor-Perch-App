@@ -25,6 +25,7 @@ $Listing->add_col([
     'title'     => 'Title',
     'value'     => 'listTitle',
     'sort'      => 'listTitle',
+    'edit_link' => $API->app_path() . '/lists/details'
 ]);
 
 $Listing->add_col([
