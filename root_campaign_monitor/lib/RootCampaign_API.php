@@ -35,24 +35,28 @@ class RootCampaign_API {
     }
 
     public function subscribers($list_id = null) {
+        PerchUtil::debug("fetching subscribers for list: $list_id");
         $API = new CS_REST_Subscribers($list_id, $this->auth);
 
         return $API;
     }
 
-    public function lists($list_id = null) {
+    public function lists($list_id) {
+        PerchUtil::debug("fetching lists");
         $API = new CS_REST_Lists($list_id, $this->auth);
 
         return $API;
     }
 
     public function campaigns($campaign_id = null) {
+        PerchUtil::debug("fetching campaigns");
         $API = new CS_REST_Campaigns($campaign_id, $this->auth);
 
         return $API;
     }
 
     public function clients() {
+        PerchUtil::debug("fetching client info");
         $API = new CS_REST_Clients($this->client_id, $this->auth);
 
         return $API;
