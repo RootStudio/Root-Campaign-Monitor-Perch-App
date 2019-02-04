@@ -41,8 +41,9 @@ DROP TABLE IF EXISTS `__PREFIX__root_campaign_monitor_imports`;
 
 CREATE TABLE `__PREFIX__root_campaign_monitor_imports` (
   `importID` int(10) NOT NULL AUTO_INCREMENT,
-  `importType` char(32) NOT NULL DEFAULT 'list',
-  `importUpdated` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `importType` varchar(32) NOT NULL,
+  `importValue` varchar(32) NULL DEFAULT 'false',
+  `importUpdated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`importID`)
 ) CHARSET=utf8;
 
@@ -50,12 +51,13 @@ DROP TABLE IF EXISTS `__PREFIX__root_campaign_monitor_subscribers`;
 
 CREATE TABLE `__PREFIX__root_campaign_monitor_subscribers` (
   `subscriberID` int(11) NOT NULL AUTO_INCREMENT,
-  `subscriberCampaignMonitorID` char(255) NOT NULL,
+  `listCampaignMonitorID` char(255) NOT NULL,
   `subscriberEmailAddress` char(255) NOT NULL DEFAULT '',
   `subscriberName` char(255) DEFAULT NULL,
   `subscriberState` char(255) NOT NULL,
+  `subscriberDateSubscribed` date NULL,
   `subscriberCreated` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `subscriberUpdated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`subscriberID`),
-  UNIQUE KEY (`subscriberCampaignMonitorID`)
+  UNIQUE KEY (`subscriberEmailAddress`)
 ) CHARSET=utf8;

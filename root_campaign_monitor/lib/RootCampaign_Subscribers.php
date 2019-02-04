@@ -26,7 +26,7 @@ class RootCampaign_Subscribers extends RootCampaign_Factory {
      *
      * @var string
      */
-    protected $default_sort_column = 'subscriberD';
+    protected $default_sort_column = 'subscriberID';
 
     /**
      * Sort direction
@@ -49,13 +49,33 @@ class RootCampaign_Subscribers extends RootCampaign_Factory {
      */
     protected $namespace = 'subscribers';
 
+    /**
+     * List ID for subscribers
+     *
+     * @var string
+     */
+    protected $listID;
+
+    /**
+     * Type of subscriber
+     *
+     * @var string
+     */
+    protected $state;
+
     private $payload;
+
+    public function __construct($listID, $state = 'Active', $api = false) {
+        $this->listID = $listID;
+        $this->state = $state;
+        parent::__construct($api);
+    }
 
     public static function subscribe_from_form(PerchAPI_SubmittedForm $SubmittedForm) {
         $self = new self();
-        $list_IDs = [];
+        $subscriber_IDs = [];
         if (isset($SubmittedForm->data['list_id'])) {
-            $list_IDs[] = $SubmittedForm->data['list_id'];
+            $subscriber_IDs[] = $SubmittedForm->data['list_id'];
 
             $attr_map = $SubmittedForm->get_attribute_map('campaign');
             if (PerchUtil::count($attr_map)) {
@@ -63,7 +83,7 @@ class RootCampaign_Subscribers extends RootCampaign_Factory {
                     switch ($key) {
                         case 'list':
                             if (isset($SubmittedForm->data[$fieldID])) {
-                                $list_IDs[] = $SubmittedForm->data[$fieldID];
+                                $subscriber_IDs[] = $SubmittedForm->data[$fieldID];
                             }
                             break;
 
@@ -94,14 +114,14 @@ class RootCampaign_Subscribers extends RootCampaign_Factory {
                 }
             }
 
-            if (PerchUtil::count($list_IDs)) {
+            if (PerchUtil::count($subscriber_IDs)) {
 
 
-                foreach ($list_IDs as $list_ID) {
+                foreach ($subscriber_IDs as $subscriber_ID) {
 
-                    PerchUtil::debug('Subscribing ' . $self->payload['Name'] . ' <' . $self->payload['EmailAddress'] . '> to: ' . $list_ID);
+                    PerchUtil::debug('Subscribing ' . $self->payload['Name'] . ' <' . $self->payload['EmailAddress'] . '> to: ' . $subscriber_ID);
 
-                    $result = $self->rest_api->subscribers($list_ID)->add($self->payload);
+                    $result = $self->rest_api->subscribers($subscriber_ID)->add($self->payload);
 
                     if ($result->was_successful()) {
                         PerchUtil::debug("Subscribed with code $result->http_status_code");
@@ -118,55 +138,130 @@ class RootCampaign_Subscribers extends RootCampaign_Factory {
 
     }
 
+    /**
+     * Find a subscriber by ID
+     *
+     * @param int    $value
+     * @param string    $column
+     * @param boolean $import
+     *
+     * @return RootBuilder_list|bool
+     */
+    public function find($value, $column = null) {
+        $column = ($column === null) ? $this->pk : $column ;
+        $sql = 'SELECT * FROM ' . $this->table .
+            ' WHERE ' . $column . '=' . $this->db->pdb($value) . ' AND ' . $this->standard_restrictions() . ' LIMIT 1';
+        $result = $this->db->get_row($sql);
+
+
+        if (is_array($result)) {
+            return $this->return_instance($result);
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Returns all records optionally paginated
+     *
+     * @param int    $listID
+     * @param bool   $Paging
+     *
+     * @return array|bool|SplFixedArray
+     */
+    public function all($Paging = false) {
+        if ($this->importer->checkSync('subscribers' . $this->state, $this->listID)) $this->import();
+
+        if ($Paging && $Paging->enabled()) {
+            $sql = $Paging->select_sql();
+        } else {
+            $sql = 'SELECT';
+        }
+
+        $sql .= ' *   
+                FROM ' . $this->table;
+
+        $restrictions = ' WHERE ' . $this->standard_restrictions();
+
+        $sql .= $restrictions;
+
+        if (isset($this->default_sort_column)) {
+            $sql .= ' ORDER BY ' . $this->default_sort_column . ' ' . $this->default_sort_direction;
+        }
+
+        if ($Paging && $Paging->enabled()) {
+            $sql .= ' ' . $Paging->limit_sql();
+        }
+
+        $results = $this->db->get_rows($sql);
+
+
+        if ($Paging && $Paging->enabled()) {
+            $Paging->set_total($this->db->get_count($Paging->total_count_sql()));
+        }
+
+        return $this->return_instances($results);
+
+    }
+
     public function import() {
-        $sent_result = $this->clients()->get_campaigns();
-        $pending_result = $this->clients()->get_campaigns();
-        $draft_result = $this->clients()->get_campaigns();
+        switch ($this->state) {
+            case 'Unconfirmed':
+                $subscriber_result = $this->rest_api->lists($this->listID)->get_unconfirmed_subscribers(null, 1, null);
+                break;
+            case 'Unsubscribed':
+                $subscriber_result = $this->rest_api->lists($this->listID)->get_unsubscribed_subscribers(null, 1, null);
+                break;
+            case 'Bounced':
+                $subscriber_result = $this->rest_api->lists($this->listID)->get_bounced_subscribers(null, 1, null);
+                break;
+            case 'Deleted':
+                $subscriber_result = $this->rest_api->lists($this->listID)->get_deleted_subscribers(null, 1, null);
+                break;
+            default:
+                $subscriber_result = $this->rest_api->lists($this->listID)->get_active_subscribers(null, 1, null);
+                break;
+        }
 
-        $sent = ($sent_result->is_successful) ? $sent_result->response() : [];
-        $pending = ($sent_result->is_successful) ? $pending_result->response() : [];
-        $draft = ($sent_result->is_successful) ? $draft_result->response() : [];
-
-        $campaigns = array_merge(
-            $this->transform($sent, 'sent'),
-            $this->transform($pending, 'pending'),
-            $this->transform($draft, 'draft')
-        );
-
-        foreach ($campaigns as $campaign) {
-            $this->createMultiple($campaign);
+        $subscribers = $subscriber_result->was_successful() ? $subscriber_result->response->Results : false;
+        if($subscribers) {
+            $this->importer->update('subscribers' . $this->state, $this->listID);
+            $this->createMultiple($this->transform($subscribers));
         }
 
     }
 
     public function createMultiple($data) {
-        foreach ($data as $campaign) {
-            $this->create($campaign);
+        foreach ($data as $subscriber) {
+            $current = $this->find($subscriber['subscriberEmailAddress'], 'subscriberEmailAddress');
+            if ($current) {
+                $current->update($subscriber);
+            } else {
+                $this->create($subscriber);
+            }
         }
     }
 
-    public function create($data) {
-        $data['campaignCreated'] = date('Y-m-d H:i:s');
-        $data['campaignUpdated'] = date('Y-m-d H:i:s');
-
-        parent::create($data);
-    }
-
-    public function update() {
-
-    }
-
     public function transform($data) {
-        return array_map(function ($campaign, $status) {
+        return array_map(function ($subscriber) {
             return [
-                'campaignMonitorID'     => $campaign['CampaignID'],
-                'campaignDateScheduled' => ($campaign['SentDate']) ? $campaign['SentDate'] : $campaign['DateScheduled'],
-                'campaignStatus'        => $status,
-                'campaignSubject'       => $campaign['Subject'],
-                'campaignName'          => $campaign['Name'],
-                'campaignPreviewURL'    => ($campaign['WebVersionURL']) ? $campaign['WebVersionURL'] : $campaign['PreviewURL'],
+                'listCampaignMonitorID' => $this->listID,
+                'subscriberEmailAddress'   => $subscriber->EmailAddress,
+                'subscriberName'           => $subscriber->Name,
+                'subscriberState'          => $subscriber->State,
+                'subscriberDateSubscribed' => $subscriber->Date,
             ];
         }, $data);
+    }
+
+    /**
+     * Standard restrictions (soft deleting)
+     *
+     * @return string
+     */
+    protected function standard_restrictions() {
+        return " listCampaignMonitorID = '$this->listID' AND subscriberState = '$this->state'";
     }
 
 }

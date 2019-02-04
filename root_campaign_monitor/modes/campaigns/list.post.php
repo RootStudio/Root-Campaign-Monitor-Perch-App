@@ -25,6 +25,7 @@ $Listing->add_col([
     'title'     => 'Title',
     'value'     => 'campaignName',
     'sort'      => 'campaignName',
+    'edit_link' => $API->app_path() . '/campaigns/details'
 ]);
 
 $Listing->add_col([

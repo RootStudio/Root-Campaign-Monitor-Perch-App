@@ -24,7 +24,26 @@ Like standard Perch apps, the Campaign Monitor App can be accessed using the App
 
 ---
 
-## Subscribing New Users
+### Settings
+There aren't many settings involved. You'll need to set the Client ID and the Client API key to work. There is an additional setting for updating data.
+
+The app will save the content retrieved from campaign monitor to provide better performance. You can choose the delay for how long the app should wait before updating data again. Below is a list of update categories
+
+|Name|Value|
+|---|---|
+|campaigns|N/A|
+|campaignSingle|Perch Campaign ID|
+|lists|N/A|
+|listSingle|Perch List ID|
+|subscribersActive|Campaign Monitor List ID|
+|subscribersUnconfirmed|Campaign Monitor List ID|
+|subscribersUnsubscribed|Campaign Monitor List ID|
+|subscribersBounced|Campaign Monitor List ID|
+|subscribersDeleted|Campaign Monitor List ID
+
+The time is set when the that specific item was last updated. Whenever an update takes place the item is marked in teh database. When the update timings are meet the update will run and the new content will be saved.
+
+### Subscribing New Users
 Root Campaign Monitor uses forms to add new subscribers to Campaign Monitor lists.
 
 On an existing form add the root_campaign_forms to the app attribute on your forms tag.

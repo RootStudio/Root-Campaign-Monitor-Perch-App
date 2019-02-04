@@ -29,7 +29,7 @@ if (!PerchUtil::count($campaigns)) {
 
 }else{
     if ($Form->submitted()) {
-        $Campaigns->import();
+        $Campaigns->import(true);
 
         $campaigns = $Campaigns->all($Paging);
 

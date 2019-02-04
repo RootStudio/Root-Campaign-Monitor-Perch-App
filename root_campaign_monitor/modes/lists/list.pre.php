@@ -30,7 +30,7 @@ if (!PerchUtil::count($lists)) {
 
 }else{
     if ($Form->submitted()) {
-        $Lists->import();
+        $Lists->import(true);
 
         $lists = $Lists->all($Paging);
 
