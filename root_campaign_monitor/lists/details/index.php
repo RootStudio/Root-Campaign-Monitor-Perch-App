@@ -8,17 +8,17 @@ $HTML = $API->get('HTML');
 $Paging = $API->get('Paging');
 
 # Set the page title
-$Perch->page_title = $Lang->get('Campaign Monitor Subscribers');
+$Perch->page_title = $Lang->get('Campaign Monitor List');
 
 # Do anything you want to do before output is started
 include('../../modes/_subnav.php');
-include('../../modes/subscribers/list.pre.php');
+include('../../modes/lists/details.pre.php');
 
 # Top layout
 include(PERCH_CORE . '/inc/top.php');
 
 # Display your page
-include('../../modes/subscribers/list.post.php');
+include('../../modes/lists/details.post.php');
 
 # Bottom layout
 include(PERCH_CORE . '/inc/btm.php');
