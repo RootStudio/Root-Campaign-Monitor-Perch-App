@@ -63,79 +63,10 @@ class RootCampaign_Subscribers extends RootCampaign_Factory {
      */
     protected $state;
 
-    private $payload;
-
     public function __construct($listID, $state = 'Active', $api = false) {
         $this->listID = $listID;
         $this->state = $state;
         parent::__construct($api);
-    }
-
-    public static function subscribe_from_form(PerchAPI_SubmittedForm $SubmittedForm) {
-        $self = new self();
-        $subscriber_IDs = [];
-        if (isset($SubmittedForm->data['list_id'])) {
-            $subscriber_IDs[] = $SubmittedForm->data['list_id'];
-
-            $attr_map = $SubmittedForm->get_attribute_map('campaign');
-            if (PerchUtil::count($attr_map)) {
-                foreach ($attr_map as $fieldID => $key) {
-                    switch ($key) {
-                        case 'list':
-                            if (isset($SubmittedForm->data[$fieldID])) {
-                                $subscriber_IDs[] = $SubmittedForm->data[$fieldID];
-                            }
-                            break;
-
-                        case 'name':
-                            $self->payload['Name'] = $SubmittedForm->data[$fieldID];
-                            break;
-
-                        case 'email':
-                            $self->payload['EmailAddress'] = $SubmittedForm->data[$fieldID];
-                            break;
-
-                        case 'consent':
-                            $self->payload['ConsentToTrack'] = $SubmittedForm->data[$fieldID];
-                            break;
-
-                        case 'resubscribe':
-                            $self->payload['Resubscribe'] = PerchUtil::bool_val($SubmittedForm->data[$fieldID]);
-                            break;
-
-                        default:
-                            $self->payload['CustomFields'][] = [
-                                'Key'   => $key,
-                                'Value' => $SubmittedForm->data[$fieldID]
-                            ];
-                            break;
-
-                    }
-                }
-            }
-
-            if (PerchUtil::count($subscriber_IDs)) {
-
-
-                foreach ($subscriber_IDs as $subscriber_ID) {
-
-                    PerchUtil::debug('Subscribing ' . $self->payload['Name'] . ' <' . $self->payload['EmailAddress'] . '> to: ' . $subscriber_ID);
-
-                    $result = $self->rest_api->subscribers($subscriber_ID)->add($self->payload);
-
-                    if ($result->was_successful()) {
-                        PerchUtil::debug("Subscribed with code $result->http_status_code");
-                    } else {
-                        PerchUtil::debug(json_encode($result->response));
-                    }
-
-                }
-            }
-
-        } else {
-            PerchUtil::debug('No List ID Set fro campaign monitor', 'error');
-        }
-
     }
 
     /**
