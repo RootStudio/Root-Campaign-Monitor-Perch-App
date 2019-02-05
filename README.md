@@ -1,6 +1,6 @@
-# Perch Campaign Monitor App v1.0.0
+# Campaign Monitor Perch App v1.0.0
 
-Root Campaign monitor is an app to view Campaign Monitor lists and campaigns. Using Perch forms you can also subscribe new users to your lists. All that is required is a Campaign Monitor Client ID and Client API Key
+Root Campaign monitor is an app to view Campaign Monitor lists and campaigns. Using Perch forms you can also subscribe new users to your lists. All that is required is a Campaign Monitor Client ID and Client API Key. The Root Campaign Monitor Perch app uses the [Campaign Monitor API](https://www.campaignmonitor.com/api/ "Campaign Monitor API Getting Started Guide").
 
 This functions very similar to the Perch Mailchimp app.
 
@@ -41,7 +41,7 @@ The app will save the content retrieved from campaign monitor to provide better 
 |subscribersBounced|Campaign Monitor List ID|
 |subscribersDeleted|Campaign Monitor List ID
 
-The time is set when that specific item was last updated. Whenever an update takes place the item is marked in the database. When the update timings are meet the update will run and the new content will be saved.
+The time is set when that specific item was last updated. Whenever an update takes place the item is marked in the database. When the update timings are met the update will run and the new content will be saved.
 
 ### Subscribing New Users
 Root Campaign Monitor uses forms to add new subscribers to Campaign Monitor lists.
