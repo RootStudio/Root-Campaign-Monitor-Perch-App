@@ -1,6 +1,6 @@
 # Perch Campaign Monitor App v1.0.0
 
-Root Campaign monitor is an app to view campaign monitor lists and campaigns. Using perch forms you can also subscribe new users to your lists. All that is required is a Campaign monitor Client ID and Client API Key
+Root Campaign monitor is an app to view Campaign Monitor lists and campaigns. Using Perch forms you can also subscribe new users to your lists. All that is required is a Campaign Monitor Client ID and Client API Key
 
 This functions very similar to the Perch Mailchimp app.
 
@@ -20,7 +20,7 @@ Once installed you can set your Client ID and Client Key in the settings area.
 
 ## Using the App
 
-Like standard Perch apps, the Campaign Monitor App can be accessed using the Apps menu in the top of the CMS admin area. Inside the app you are able to view your campaign monitor lists and campaigns. From here you can get your list IDs which will be needed to subscribe new users.
+Like standard Perch apps, the Campaign Monitor App can be accessed using the Apps menu in the top of the CMS admin area. Inside the app you are able to view your Campaign Monitor lists and campaigns. From here you can get your list IDs which will be needed to subscribe new users.
 
 ---
 
@@ -41,7 +41,7 @@ The app will save the content retrieved from campaign monitor to provide better 
 |subscribersBounced|Campaign Monitor List ID|
 |subscribersDeleted|Campaign Monitor List ID
 
-The time is set when the that specific item was last updated. Whenever an update takes place the item is marked in teh database. When the update timings are meet the update will run and the new content will be saved.
+The time is set when that specific item was last updated. Whenever an update takes place the item is marked in the database. When the update timings are meet the update will run and the new content will be saved.
 
 ### Subscribing New Users
 Root Campaign Monitor uses forms to add new subscribers to Campaign Monitor lists.
@@ -84,7 +84,7 @@ You'll need consent from the user to subscribe them. This can be implicitly gran
 
 ### Optional Fields
 
-The resubscribe option can be set in a similar fashion to consent.
+The re-subscribe option can be set in a similar fashion to consent.
 ``` HTML
 <perch:input type="checkbox" id="resubscribe" name="resubscribe" campaign="resubscribe" label="Resubscribe" value="Yes"/>
 <perch:input id="resubscribe" campaign="resubscribe" type="hidden" value="Yes" />
